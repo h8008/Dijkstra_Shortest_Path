@@ -35,14 +35,8 @@ class Node:
     def __lt__(self, node):
         return self.val[2] < node.val[2]
     
-def initHeap (input, processed):
+def initHeap ():
     heap = Heap([])
-    for j, col_j in enumerate(input[0]):
-        w = input[0][j]
-        src = 0
-        dest = j
-        heap.push((src, dest, w))
-    processed[0] = True
     return heap
 
 def initShortestPath (input):
@@ -55,26 +49,30 @@ def initShortestPath (input):
 def initProcessed (input):
     return np.full(np.array(input).shape, False)
 
-def getDests (input, src):
-    dests_pos = np.arange(input[src])
-    dests = dests_pos[input[src] != 0]
-    return dests
+def getSrcDestWeight (input, src):
+    sources = np.array(input[src])
+    dests_pos = np.arange(sources.shape[0])
+    dests = dests_pos[sources != 0]
+    weights = sources[dests]
+    sources = np.full(dests.shape, src)
+    tuples = np.array([sources, dests, weights]).T
+    return tuples
+
     
 def main (input, target):
     processed = initProcessed(input)
-    heap = initHeap(input, processed)
+    heap = initHeap()
     sp = initShortestPath(input)
 
     while(not heap.empty()):
         src, dest, weight = heap.pop().val
-        if (not processed[src][dest]):
-            sp[dest] = min(sp[src] + weight, sp[dest])
-            dests = getDests(input, src)
-            for d in enumerate(dests):
+        processed[src][dest] = True
+        sp[dest] = min(sp[src] + weight, sp[dest])
+        dests = getSrcDestWeight(input, dest)
+        for d in dests:
+            if not processed[d[0]][d[1]]:
                 heap.push(d)
-            processed[src][dest] = True
-            print(sp[dest])
 
-    print(sp[target])
+    print(sp[target - 1])
 
 main(input, 5)
